@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پيتزا دليڤەرى - Zakho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans Arabic', 'Tajawal', Tahoma, Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            direction: rtl;
+            text-align: right;
+            font-style: normal !important;
+            transform: none !important;
+        }
+        /* Ensure Kurdish text is 100% straight, upright, and non-distorted */
+        .kurdish-clean {
+            font-family: 'Noto Sans Arabic', 'Tajawal', sans-serif;
+            font-style: normal !important;
+            letter-spacing: normal !important;
+            text-transform: none;
+            direction: rtl;
+            unicode-bidi: embed;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-50 kurdish-clean">
+
+    <div id="welcome-screen" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 text-center border border-slate-100">
+            <div class="w-24 h-24 mx-auto mb-6 bg-red-600 rounded-3xl flex items-center justify-center shadow-lg shadow-red-600/30 text-white text-4xl">
+                <i class="fa-solid fa-pizza-slice"></i>
+            </div>
+            <h1 class="text-3xl font-black text-slate-900 mb-2 kurdish-clean">پيتزا دليڤەرى</h1>
+            <p class="text-slate-500 text-sm mb-6 kurdish-clean">زاخو تاخێ شقا • Zakho</p>
+            
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 text-amber-900 text-right">
+                <div class="font-black text-red-600 text-base mb-1 kurdish-clean">بخير هاتن بو منيو پيتزا دليڤەرى</div>
+                <div class="font-bold text-slate-800 text-sm mb-1 kurdish-clean">گەهاندن بێ بەرامبەرە بو زاخۆ</div>
+                <div class="text-xs text-slate-600 kurdish-clean">تامەكا خوش وناوازه ل زاخو</div>
+            </div>
+
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 kurdish-clean">زمان هەلبژێرە / اختر اللغة / Select Language</p>
+            <div class="space-y-3">
+                <button onclick="setLanguage('ku')" class="w-full py-4 px-6 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-between kurdish-clean">
+                    <span class="text-lg">کوردی (بادینی)</span>
+                    <i class="fa-solid fa-globe"></i>
+                </button>
+                <button onclick="setLanguage('ar')" class="w-full py-4 px-6 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-2xl shadow-md transition flex items-center justify-between kurdish-clean">
+                    <span class="text-lg">العربية</span>
+                    <i class="fa-solid fa-globe"></i>
+                </button>
+                <button onclick="setLanguage('en')" class="w-full py-4 px-6 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-2xl transition flex items-center justify-between kurdish-clean">
+                    <span class="text-lg">English</span>
+                    <i class="fa-solid fa-globe"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3 space-x-reverse">
+                <div id="header-logo-container" class="w-12 h-12 rounded-2xl bg-red-600 text-white flex items-center justify-center font-black overflow-hidden shadow-md shadow-red-500/20">
+                    <i class="fa-solid fa-pizza-slice text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-slate-900 tracking-tight kurdish-clean" id="brand-title">پيتزا دليڤەرى</h1>
+                    <p class="text-xs font-semibold text-emerald-600 flex items-center gap-1 kurdish-clean">
+                        <i class="fa-solid fa-truck-fast"></i> <span id="delivery-badge">گەهاندن بێ بەرامبەرە بو زاخۆ</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button onclick="openAdminModal()" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl flex items-center justify-center transition" title="Admin">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+                <button onclick="showWelcomeScreen()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition flex items-center gap-1.5 kurdish-clean">
+                    <i class="fa-solid fa-globe"></i>
+                    <span id="current-lang-label" class="uppercase text-xs font-bold">KU</span>
+                </button>
+                <button onclick="toggleCartDrawer()" class="relative p-2.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl transition flex items-center justify-center">
+                    <i class="fa-solid fa-bag-shopping text-xl"></i>
+                    <span id="cart-counter" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow-sm hidden">0</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-slate-50 border-t border-slate-100 overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-2" id="categories-bar">
+                <!-- Populated via JS -->
+            </div>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto px-4 pt-6 pb-2">
+        <div class="bg-gradient-to-r from-red-600 to-rose-700 rounded-3xl p-6 text-white shadow-xl shadow-red-600/20 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="relative z-10 text-right">
+                <span class="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block kurdish-clean">زاخو تاخێ شقا • Zakho</span>
+                <h2 class="text-2xl md:text-3xl font-black mb-2 kurdish-clean" id="hero-title">بخير هاتن بو منيو پيتزا دليڤەرى</h2>
+                <p class="text-red-100 text-sm md:text-base max-w-xl font-medium kurdish-clean" id="hero-subtitle">تامەكا خوش وناوازه ل زاخو. گەهاندن بێ بەرامبەرە بو زاخۆ.</p>
+            </div>
+            <div class="relative z-10">
+                <a href="https://maps.google.com/?q=37.158360,42.689598" target="_blank" class="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl font-bold text-sm transition flex items-center justify-center gap-2 backdrop-blur-sm border border-white/20 kurdish-clean">
+                    <i class="fa-solid fa-location-dot text-amber-300"></i>
+                    <span id="map-btn-text">جهـ و ناڤنیشان (لوكيشن)</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+        <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+            <h3 id="active-category-title" class="text-2xl font-black text-slate-800 kurdish-clean">بيتزا</h3>
+            <div class="relative max-w-xs w-full">
+                <input type="text" id="search-input" oninput="filterProducts()" placeholder="گەران ل دووڤ خارنێ..." class="w-full bg-white border border-slate-200 rounded-2xl py-2.5 pr-10 pl-4 text-sm focus:outline-none focus:border-red-500 shadow-sm transition kurdish-clean">
+                <i class="fa-solid fa-magnifying-glass absolute right-3.5 top-3.5 text-slate-400"></i>
+            </div>
+        </div>
+
+        <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Populated via JS -->
+        </div>
+    </main>
+
+    <div id="cart-drawer" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden transition-opacity duration-300">
+        <div class="absolute inset-y-0 left-0 max-w-md w-full bg-white shadow-2xl flex flex-col transform transition-transform duration-300 translate-x-full" id="cart-drawer-panel">
+            <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-bag-shopping text-red-600 text-lg"></i>
+                    <h3 class="font-black text-slate-800 text-lg kurdish-clean" id="cart-title">سەبتا داخوازیان</h3>
+                </div>
+                <button onclick="toggleCartDrawer()" class="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div id="cart-items-container" class="flex-grow overflow-y-auto p-4 divide-y divide-slate-100">
+                <!-- Cart items -->
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100">
+                <div class="mb-4 space-y-2">
+                    <div class="flex justify-between text-sm text-slate-500 font-medium">
+                        <span id="cart-subtotal-label" class="kurdish-clean">کۆما گشتی:</span>
+                        <span id="cart-subtotal-val">0 د.ع</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-emerald-600 font-bold kurdish-clean">
+                        <span id="cart-delivery-label">گەهاندن بو زاخۆ:</span>
+                        <span>بێ بەرامبەر (مجاني)</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-black text-slate-900 pt-2 border-t border-slate-200">
+                        <span id="cart-total-label" class="kurdish-clean">کۆما دووماهیێ:</span>
+                        <span id="cart-total-val" class="text-red-600">0 د.ع</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 kurdish-clean" id="customer-name-label">ناڤێ تە:</label>
+                        <input type="text" id="customer-name" placeholder="ناڤێ خۆ ل ڤێرە بنڤیسە..." class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-red-500 kurdish-clean">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1 kurdish-clean" id="customer-address-label">ناڤنیشان ل زاخو / ژمارا تەلەفۆنی:</label>
+                        <input type="text" id="customer-address" placeholder="زاخو تاخێ شقا، ژمارا تەلەفۆنی..." class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-red-500 kurdish-clean">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 pt-2">
+                        <button onclick="sendOrderWhatsApp('07508653006')" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2 text-xs kurdish-clean">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                            <span>واتساب 07508653006</span>
+                        </button>
+                        <button onclick="sendOrderWhatsApp('07508653007')" class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-lg shadow-emerald-700/20 transition flex items-center justify-center gap-2 text-xs kurdish-clean">
+                            <i class="fa-brands fa-whatsapp text-lg"></i>
+                            <span>واتساب 07508653007</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-lock text-red-500"></i>
+                    <h3 class="font-black text-lg kurdish-clean" id="admin-modal-title">رێڤەبرنا منیو (Admin Panel)</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Login View -->
+            <div id="admin-login-view" class="p-8 text-center my-auto">
+                <div class="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center mb-4 text-2xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h4 class="text-xl font-bold text-slate-800 mb-2 kurdish-clean">کودا دەربازبوونێ بنڤیسە</h4>
+                <p class="text-sm text-slate-500 mb-6 kurdish-clean">ڤی پشکی تنێ بو خودانێ مطعمێ یە</p>
+                <div class="max-w-xs mx-auto space-y-3">
+                    <input type="password" id="admin-code-input" placeholder="•••••" class="w-full bg-slate-100 border border-slate-200 rounded-2xl py-3 px-4 text-center text-xl tracking-widest font-bold focus:outline-none focus:border-red-500">
+                    <button onclick="verifyAdminCode()" class="w-full py-3.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl shadow-lg shadow-red-600/20 transition kurdish-clean">
+                        تۆمارکرنا دەربازبوونێ
+                    </button>
+                    <p id="admin-error-msg" class="text-xs text-rose-600 font-bold hidden kurdish-clean">کودا نا دروستە!</p>
+                </div>
+            </div>
+
+            <!-- Dashboard View -->
+            <div id="admin-dashboard-view" class="hidden flex-grow overflow-y-auto p-6 space-y-6">
+                <!-- Restaurant Logo Upload -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                    <h4 class="font-bold text-slate-800 mb-2 flex items-center gap-2 kurdish-clean">
+                        <i class="fa-solid fa-image text-red-600"></i> گوهۆڕینا لوگویا مطعمێ (ژ استودیو)
+                    </h4>
+                    <div class="flex items-center gap-4">
+                        <div id="admin-logo-preview" class="w-14 h-14 bg-red-600 text-white rounded-xl flex items-center justify-center overflow-hidden font-bold">
+                            <i class="fa-solid fa-pizza-slice"></i>
+                        </div>
+                        <input type="file" id="logo-file-input" accept="image/*" onchange="handleLogoUpload(event)" class="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-red-50 file:text-red-700 hover:file:bg-red-100 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Products Manager -->
+                <div>
+                    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                        <h4 class="font-black text-slate-800 text-lg kurdish-clean">رێڤەبرنا بەرهەم و بهایان و وێنەیان</h4>
+                        <button onclick="addNewProductPrompt()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-sm kurdish-clean">
+                            <i class="fa-solid fa-plus"></i> زێدەکرنا بەرهەمەکێ نوو
+                        </button>
+                    </div>
+                    <div id="admin-products-list" class="space-y-3">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="msg-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+        <div class="max-w-sm w-full bg-white rounded-3xl shadow-2xl p-6 text-center">
+            <div id="msg-icon" class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center text-2xl"></div>
+            <h4 id="msg-title" class="text-xl font-black text-slate-800 mb-2 kurdish-clean"></h4>
+            <p id="msg-text" class="text-slate-600 text-sm mb-6 kurdish-clean"></p>
+            <button onclick="closeMsgModal()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition kurdish-clean">
+                باشە
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            ku: {
+                brandTitle: "پيتزا دليڤەرى",
+                deliveryBadge: "گەهاندن بێ بەرامبەرە بو زاخۆ",
+                heroTitle: "بخير هاتن بو منيو پيتزا دليڤەرى",
+                heroSubtitle: "تامەكا خوش وناوازه ل زاخو. گەهاندن بێ بەرامبەرە بو زاخۆ.",
+                mapBtnText: "لوكيشن و ناڤنیشان",
+                activeCategoryTitle: "بيتزا",
+                searchPlaceholder: "گەران ل دووڤ خارنێ...",
+                cartTitle: "سەبتا داخوازیان",
+                cartSubtotal: "کۆما گشتی:",
+                cartDelivery: "گەهاندن:",
+                cartTotal: "کۆما دووماهیێ:",
+                customerNameLabel: "ناڤێ تە:",
+                customerAddressLabel: "ناڤنیشان ل زاخو (تاخێ شقا) / ژمارا تەلەفۆنی:",
+                namePlaceholder: "ناڤێ خۆ ل ڤێرە بنڤیسە...",
+                addressPlaceholder: "زاخو تاخێ شقا، ژمارا تەلەفۆنی...",
+                addToCart: "لێک زێدەکرن",
+                iqd: "د.ع",
+                categories: {
+                    pizza: "بيتزا",
+                    vip: "بيتزا VIP",
+                    grills: "مشاوي",
+                    wraps: "لفات و سندويتش",
+                    mansaf: "منسف و وجبات",
+                    beverages: "مشروبات"
+                }
+            },
+            ar: {
+                brandTitle: "پيتزا دليڤەرى",
+                deliveryBadge: "توصيل مجاني في زاخو",
+                heroTitle: "أهلاً بكم في منيو پيتزا دليڤەرى",
+                heroSubtitle: "تامەكا خوش وناوازه ل زاخو. توصيل مجاني في زاخو تاخێ شقا.",
+                mapBtnText: "موقعنا على الخريطة",
+                activeCategoryTitle: "بيتزا",
+                searchPlaceholder: "ابحث عن منتج...",
+                cartTitle: "سلة الطلبات",
+                cartSubtotal: "المجموع الجزئي:",
+                cartDelivery: "التوصيل في زاخو:",
+                cartTotal: "المجموع الكلي:",
+                customerNameLabel: "اسم العميل:",
+                customerAddressLabel: "العنوان في زاخو (تاخێ شقا) / رقم الهاتف:",
+                namePlaceholder: "أدخل اسمك الكريم...",
+                addressPlaceholder: "زاخو تاخێ شقا، رقم الهاتف...",
+                addToCart: "إضافة للسلة",
+                iqd: "د.ع",
+                categories: {
+                    pizza: "بيتزا",
+                    vip: "بيتزا VIP",
+                    grills: "المشاوي",
+                    wraps: "اللفات والسندويتشات",
+                    mansaf: "المنسف والوجبات",
+                    beverages: "المشروبات"
+                }
+            },
+            en: {
+                brandTitle: "پيتزا دليڤەرى",
+                deliveryBadge: "Free Delivery in Zakho",
+                heroTitle: "Welcome to پيتزا دليڤەرى",
+                heroSubtitle: "Delicious meals with free delivery in Zakho (Zakho Tahi Shqa).",
+                mapBtnText: "Location Map",
+                activeCategoryTitle: "Pizza",
+                searchPlaceholder: "Search items...",
+                cartTitle: "Order Cart",
+                cartSubtotal: "Subtotal:",
+                cartDelivery: "Delivery in Zakho:",
+                cartTotal: "Total:",
+                customerNameLabel: "Customer Name:",
+                customerAddressLabel: "Zakho Address / Phone:",
+                namePlaceholder: "Enter your full name...",
+                addressPlaceholder: "Zakho, phone number...",
+                addToCart: "Add to Cart",
+                iqd: "IQD",
+                categories: {
+                    pizza: "Pizza",
+                    vip: "Pizza VIP",
+                    grills: "Grills",
+                    wraps: "Wraps & Sandwiches",
+                    mansaf: "Mansaf & Rice",
+                    beverages: "Beverages"
+                }
+            }
+        };
+
+        let currentLang = 'ku';
+        let activeCategory = 'pizza';
+        let cart = [];
+        let restaurantLogo = null;
+
+        const defaultProducts = [
+            // Pizza section
+            { id: 'p1', cat: 'pizza', nameAr: 'بيتزا ببروني', nameKu: 'بيتزا ببروني', nameEn: 'Pepperoni Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p2', cat: 'pizza', nameAr: 'بيتزا سجق', nameKu: 'بيتزا سجق', nameEn: 'Sujuk Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p3', cat: 'pizza', nameAr: 'بيتزا تونا', nameKu: 'بيتزا تونا', nameEn: 'Tuna Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p4', cat: 'pizza', nameAr: 'بيتزا عادى', nameKu: 'بيتزا عادى', nameEn: 'Regular Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p5', cat: 'pizza', nameAr: 'بيتزا ايطالي', nameKu: 'بيتزا ايطالي', nameEn: 'Italian Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1595730310708-3a13919e8f46?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p6', cat: 'pizza', nameAr: 'بيتزا مريشك', nameKu: 'بيتزا مريشك', nameEn: 'Chicken Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p7', cat: 'pizza', nameAr: 'بيتزا مارگريتا', nameKu: 'بيتزا مارگريتا', nameEn: 'Margherita Pizza', price: 3000, img: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p8', cat: 'pizza', nameAr: 'لحم بعجين عادى', nameKu: 'لحم بعجين عادى', nameEn: 'Regular Lahm Baajin', price: 1000, img: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p9', cat: 'pizza', nameAr: 'لحم بعجين دبل', nameKu: 'لحم بعجين دبل', nameEn: 'Double Lahm Baajin', price: 2000, img: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80' },
+            { id: 'p10', cat: 'pizza', nameAr: 'كاده عادي', nameKu: 'كاده عادي', nameEn: 'Regular Kada', price: 1500, img: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?auto=format&fit=crop&w=600&q=80' },
+
+            // Pizza VIP
+            { id: 'v1', cat: 'vip', nameAr: 'بيتزا نوتيلا', nameKu: 'بيتزا نوتيلا', nameEn: 'Nutella Pizza', price: 4000, img: 'https://images.unsplash.com/photo-1579714544004-946dd99787c8?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v2', cat: 'vip', nameAr: 'بيتزا vip', nameKu: 'بيتزا vip', nameEn: 'VIP Pizza', price: 5000, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v3', cat: 'vip', nameAr: 'بيتزا قومبله', nameKu: 'بيتزا قومبله', nameEn: 'Bomb Pizza', price: 100000, img: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v4', cat: 'vip', nameAr: 'بيتزا نيف قومبه له', nameKu: 'بيتزا نيف قومبه له', nameEn: 'Half Bomb Pizza', price: 7000, img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v5', cat: 'vip', nameAr: 'بيتزا عادي', nameKu: 'بيتزا عادي VIP', nameEn: 'VIP Regular Pizza', price: 4000, img: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v6', cat: 'vip', nameAr: 'بيتزا سجق', nameKu: 'بيتزا سجق VIP', nameEn: 'VIP Sujuk Pizza', price: 5000, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v7', cat: 'vip', nameAr: 'بيتزا ببروني', nameKu: 'بيتزا ببروني VIP', nameEn: 'VIP Pepperoni Pizza', price: 5000, img: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v8', cat: 'vip', nameAr: 'بيتزا مارگريتا', nameKu: 'بيتزا مارگريتا VIP', nameEn: 'VIP Margherita', price: 5000, img: 'https://images.unsplash.com/photo-1604382355076-af4b0eb60143?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v9', cat: 'vip', nameAr: 'بيتزا ايطالي', nameKu: 'بيتزا ايطالي VIP', nameEn: 'VIP Italian Pizza', price: 5000, img: 'https://images.unsplash.com/photo-1595730310708-3a13919e8f46?auto=format&fit=crop&w=600&q=80' },
+            { id: 'v10', cat: 'vip', nameAr: 'لحم بعجين', nameKu: 'لحم بعجين VIP', nameEn: 'VIP Lahm Baajin', price: 2000, img: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?auto=format&fit=crop&w=600&q=80' },
+
+            // Grills
+            { id: 'g1', cat: 'grills', nameAr: 'نفر كباب لحم', nameKu: 'نفر كباب لحم', nameEn: 'Meat Kebab Plate', price: 10000, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g2', cat: 'grills', nameAr: 'نصف نفر', nameKu: 'نصف نفر', nameEn: 'Half Plate Grills', price: 5000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g3', cat: 'grills', nameAr: 'نفر كباب دجاج', nameKu: 'نفر كباب دجاج', nameEn: 'Chicken Kebab Plate', price: 8000, img: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g4', cat: 'grills', nameAr: 'نفر تكه لحم', nameKu: 'نفر تكه لحم', nameEn: 'Meat Tikka Plate', price: 10000, img: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g5', cat: 'grills', nameAr: 'نفر تكة دجاج', nameKu: 'نفر تكة دجاج', nameEn: 'Chicken Tikka Plate', price: 8000, img: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g6', cat: 'grills', nameAr: 'نفر ميلاك', nameKu: 'نفر ميلاك', nameEn: 'Melak Plate', price: 10000, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g7', cat: 'grills', nameAr: 'نفر مشكل', nameKu: 'نفر مشكل', nameEn: 'Mixed Grills Plate', price: 10000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g8', cat: 'grills', nameAr: 'نفر جەنگ (اجنحه)', nameKu: 'نفر جەنگ (اجنحه)', nameEn: 'Chicken Wings Plate', price: 10000, img: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g9', cat: 'grills', nameAr: 'كيلو كباب لحم', nameKu: 'كيلو كباب لحم', nameEn: '1 Kg Meat Kebab', price: 25000, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g10', cat: 'grills', nameAr: 'كيلو تكه دجاج', nameKu: 'كيلو تكه دجاج', nameEn: '1 Kg Chicken Tikka', price: 25000, img: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g11', cat: 'grills', nameAr: 'كيلو تكه لحم', nameKu: 'كيلو تكه لحم', nameEn: '1 Kg Meat Tikka', price: 25000, img: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g12', cat: 'grills', nameAr: 'كيلو مشكل', nameKu: 'كيلو مشكل', nameEn: '1 Kg Mixed Grills', price: 27000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'g13', cat: 'grills', nameAr: 'منسف مشاوي', nameKu: 'منسف مشاوي', nameEn: 'Grills Mansaf', price: 30000, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80' },
+
+            // Wraps
+            { id: 'w1', cat: 'wraps', nameAr: 'لفه دجاج عادى', nameKu: 'لفه دجاج عادى', nameEn: 'Regular Chicken Wrap', price: 1000, img: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w2', cat: 'wraps', nameAr: 'لفه سوري دجاج', nameKu: 'لفه سوري دجاج', nameEn: 'Syrian Chicken Wrap', price: 2000, img: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w3', cat: 'wraps', nameAr: 'لفه فلافل', nameKu: 'لفه فلافل', nameEn: 'Falafel Wrap', price: 1000, img: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w4', cat: 'wraps', nameAr: 'ماعون فلافل', nameKu: 'ماعون فلافل', nameEn: 'Falafel Plate', price: 5000, img: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w5', cat: 'wraps', nameAr: 'ماعون گص مريشك (دجاج)', nameKu: 'ماعون گص مريشك (دجاج)', nameEn: 'Chicken Gyro Plate', price: 10000, img: 'https://images.unsplash.com/photo-1561651823-34feb02256e4?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w6', cat: 'wraps', nameAr: 'نيڤ ماعون گص مريشك (دجاج)', nameKu: 'نيڤ ماعون گص مريشك (دجاج)', nameEn: 'Half Chicken Gyro Plate', price: 5000, img: 'https://images.unsplash.com/photo-1561651823-34feb02256e4?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w7', cat: 'wraps', nameAr: 'لفه لحم (گوشت ) عادى', nameKu: 'لفه لحم (گوشت ) عادى', nameEn: 'Regular Meat Wrap', price: 2000, img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w8', cat: 'wraps', nameAr: 'لفه سوري گوشت (لحم)', nameKu: 'لفه سوري گوشت (لحم)', nameEn: 'Syrian Meat Wrap', price: 3000, img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w9', cat: 'wraps', nameAr: 'فلافل سوري', nameKu: 'فلافل سوري', nameEn: 'Syrian Falafel', price: 3000, img: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w10', cat: 'wraps', nameAr: 'برگر لحم (گوشت)', nameKu: 'برگر لحم (گوشت)', nameEn: 'Meat Burger', price: 4000, img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w11', cat: 'wraps', nameAr: 'برگر مريشك (دجاج)', nameKu: 'برگر مريشك (دجاج)', nameEn: 'Chicken Burger', price: 3000, img: 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w12', cat: 'wraps', nameAr: 'دبل چيز برگر', nameKu: 'دبل چيز برگر', nameEn: 'Double Cheese Burger', price: 5000, img: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w13', cat: 'wraps', nameAr: 'دونەر مريشك', nameKu: 'دونەر مريشك', nameEn: 'Chicken Doner', price: 3000, img: 'https://images.unsplash.com/photo-1561651823-34feb02256e4?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w14', cat: 'wraps', nameAr: 'دونەر گوشت', nameKu: 'دونەر گوشت', nameEn: 'Meat Doner', price: 4000, img: 'https://images.unsplash.com/photo-1561651823-34feb02256e4?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w15', cat: 'wraps', nameAr: 'بوكس دجاج', nameKu: 'بوكس دجاج', nameEn: 'Chicken Box', price: 3000, img: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w16', cat: 'wraps', nameAr: 'بوكس لحم', nameKu: 'بوكس لحم', nameEn: 'Meat Box', price: 4000, img: 'https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w17', cat: 'wraps', nameAr: 'بوكس دايت', nameKu: 'بوكس دايت', nameEn: 'Diet Box', price: 3000, img: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w18', cat: 'wraps', nameAr: 'دونه ر مشكل جبن', nameKu: 'دونه ر مشكل جبن', nameEn: 'Mixed Doner Cheese', price: 5000, img: 'https://images.unsplash.com/photo-1561651823-34feb02256e4?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w19', cat: 'wraps', nameAr: 'فنگر', nameKu: 'فنگر', nameEn: 'French Fries', price: 2500, img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80' },
+            { id: 'w20', cat: 'wraps', nameAr: 'وجبة فنگر مع فلافل', nameKu: 'وجبة فنگر مع فلافل', nameEn: 'Fries & Falafel Meal', price: 6000, img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=600&q=80' },
+
+            // Mansaf
+            { id: 'm1', cat: 'mansaf', nameAr: 'مريشك سادة', nameKu: 'مريشك سادة', nameEn: 'Plain Chicken Rice', price: 8000, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80' },
+            { id: 'm2', cat: 'mansaf', nameAr: 'مريشك كامل', nameKu: 'مريشك كامل', nameEn: 'Whole Chicken Rice', price: 10000, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80' },
+            { id: 'm3', cat: 'mansaf', nameAr: 'منسف 2 نفر', nameKu: 'منسف 2 نفر', nameEn: 'Mansaf 2 Persons', price: 10000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'm4', cat: 'mansaf', nameAr: 'منسف 3 نفر', nameKu: 'منسف 3 نفر', nameEn: 'Mansaf 3 Persons', price: 15000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'm5', cat: 'mansaf', nameAr: 'منسف 4 نفر', nameKu: 'منسف 4 نفر', nameEn: 'Mansaf 4 Persons', price: 20000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'm6', cat: 'mansaf', nameAr: 'منسف 5 نفر', nameKu: 'منسف 5 نفر', nameEn: 'Mansaf 5 Persons', price: 25000, img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80' },
+            { id: 'm7', cat: 'mansaf', nameAr: 'كبسة سعودي', nameKu: 'كبسة سعودي', nameEn: 'Saudi Kabsa', price: 40000, img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=600&q=80' },
+
+            // Beverages
+            { id: 'b1', cat: 'beverages', nameAr: 'ببسي', nameKu: 'ببسي', nameEn: 'Pepsi', price: 500, img: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?auto=format&fit=crop&w=600&q=80' },
+            { id: 'b2', cat: 'beverages', nameAr: 'فانتا برتقال', nameKu: 'فانتا برتقال', nameEn: 'Fanta Orange', price: 500, img: 'https://images.unsplash.com/photo-1624552184280-9e9632bbeee9?auto=format&fit=crop&w=600&q=80' },
+            { id: 'b3', cat: 'beverages', nameAr: 'سفن اب', nameKu: 'سفن اب', nameEn: '7Up', price: 500, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=600&q=80' },
+            { id: 'b4', cat: 'beverages', nameAr: 'چاي كردي', nameKu: 'چاي كردي', nameEn: 'Kurdish Tea', price: 250, img: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80' },
+            { id: 'b5', cat: 'beverages', nameAr: 'ده و كردي', nameKu: 'ده و كردي', nameEn: 'Kurdish Doogh', price: 1000, img: 'https://images.unsplash.com/photo-1541658016709-82535e94bc69?auto=format&fit=crop&w=600&q=80' }
+        ];
+
+        let products = [...defaultProducts];
+
+        function loadStorageData() {
+            const savedProducts = localStorage.getItem('pizza_delivery_products_v3');
+            if (savedProducts) {
+                try { products = JSON.parse(savedProducts); } catch(e) {}
+            }
+            const savedLogo = localStorage.getItem('pizza_delivery_logo_v3');
+            if (savedLogo) {
+                restaurantLogo = savedLogo;
+                updateLogoDisplay();
+            }
+        }
+
+        function saveStorageData() {
+            localStorage.setItem('pizza_delivery_products_v3', JSON.stringify(products));
+            if (restaurantLogo) {
+                localStorage.setItem('pizza_delivery_logo_v3', restaurantLogo);
+            }
+        }
+
+        function updateLogoDisplay() {
+            const containers = document.querySelectorAll('#header-logo-container, #admin-logo-preview');
+            containers.forEach(el => {
+                if (restaurantLogo) {
+                    el.innerHTML = `<img src="${restaurantLogo}" class="w-full h-full object-cover">`;
+                }
+            });
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.getElementById('welcome-screen').classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                document.getElementById('welcome-screen').style.display = 'none';
+            }, 300);
+            
+            document.getElementById('current-lang-label').innerText = lang.toUpperCase();
+            document.documentElement.setAttribute('dir', 'rtl');
+            renderUI();
+        }
+
+        function showWelcomeScreen() {
+            const ws = document.getElementById('welcome-screen');
+            ws.style.display = 'flex';
+            setTimeout(() => ws.classList.remove('opacity-0', 'pointer-events-none'), 10);
+        }
+
+        function renderUI() {
+            const t = translations[currentLang];
+            document.getElementById('brand-title').innerText = t.brandTitle;
+            document.getElementById('delivery-badge').innerText = t.deliveryBadge;
+            document.getElementById('hero-title').innerText = t.heroTitle;
+            document.getElementById('hero-subtitle').innerText = t.heroSubtitle;
+            document.getElementById('map-btn-text').innerText = t.mapBtnText;
+            document.getElementById('active-category-title').innerText = t.categories[activeCategory] || t.activeCategoryTitle;
+            document.getElementById('search-input').placeholder = t.searchPlaceholder;
+            document.getElementById('cart-title').innerText = t.cartTitle;
+            document.getElementById('cart-subtotal-label').innerText = t.cartSubtotal;
+            document.getElementById('cart-delivery-label').innerText = t.cartDelivery;
+            document.getElementById('cart-total-label').innerText = t.cartTotal;
+            document.getElementById('customer-name-label').innerText = t.customerNameLabel;
+            document.getElementById('customer-address-label').innerText = t.customerAddressLabel;
+            document.getElementById('customer-name').placeholder = t.namePlaceholder;
+            document.getElementById('customer-address').placeholder = t.addressPlaceholder;
+
+            renderCategoriesBar();
+            renderProductsGrid();
+            renderCartItems();
+        }
+
+        function renderCategoriesBar() {
+            const cats = [
+                { id: 'pizza', icon: 'fa-pizza-slice' },
+                { id: 'vip', icon: 'fa-crown' },
+                { id: 'grills', icon: 'fa-fire-burner' },
+                { id: 'wraps', icon: 'fa-burger' },
+                { id: 'mansaf', icon: 'fa-bowl-food' },
+                { id: 'beverages', icon: 'fa-cup-soda' }
+            ];
+            const t = translations[currentLang].categories;
+            const bar = document.getElementById('categories-bar');
+            bar.innerHTML = cats.map(c => `
+                <button onclick="selectCategory('${c.id}')" class="px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition flex items-center gap-2 kurdish-clean ${activeCategory === c.id ? 'bg-red-600 text-white shadow-md shadow-red-500/20' : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'}">
+                    <i class="fa-solid ${c.icon}"></i>
+                    <span>${t[c.id]}</span>
+                </button>
+            `).join('');
+        }
+
+        function selectCategory(catId) {
+            activeCategory = catId;
+            renderCategoriesBar();
+            renderProductsGrid();
+            document.getElementById('active-category-title').innerText = translations[currentLang].categories[catId];
+        }
+
+        function renderProductsGrid() {
+            const grid = document.getElementById('products-grid');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            
+            const filtered = products.filter(p => {
+                const matchesCat = (p.cat === activeCategory);
+                const nameMatch = p.nameAr.toLowerCase().includes(searchVal) || p.nameKu.toLowerCase().includes(searchVal) || p.nameEn.toLowerCase().includes(searchVal);
+                return (searchVal ? nameMatch : matchesCat);
+            });
+
+            const t = translations[currentLang];
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-400 kurdish-clean">
+                        <i class="fa-solid fa-utensils text-4xl mb-3"></i>
+                        <p class="font-bold">چ خارنەک نینە ل دووڤ ڤی گەرانێ</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(p => {
+                const name = currentLang === 'en' ? p.nameEn : (currentLang === 'ku' ? p.nameKu : p.nameAr);
+                return `
+                    <div class="bg-white rounded-3xl p-4 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition group">
+                        <div>
+                            <div class="w-full h-44 rounded-2xl overflow-hidden mb-4 bg-slate-100 relative">
+                                <img src="${p.img}" alt="${name}" onerror="this.src='https://placehold.co/400x300/fee2e2/991b1b?text=Pizza+Delivery'" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-slate-900 font-black text-xs px-2.5 py-1 rounded-xl shadow-sm">
+                                    ${p.price.toLocaleString()} ${t.iqd}
+                                </div>
+                            </div>
+                            <h4 class="font-black text-slate-800 text-lg mb-1 kurdish-clean">${name}</h4>
+                        </div>
+                        <div class="pt-4 border-t border-slate-100 flex items-center justify-between mt-2">
+                            <span class="text-xs font-bold text-slate-400 kurdish-clean">زاخو • Zakho</span>
+                            <button onclick="addToCart('${p.id}')" class="px-4 py-2.5 bg-red-50 hover:bg-red-600 text-red-600 hover:text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm kurdish-clean">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>${t.addToCart}</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterProducts() {
+            renderProductsGrid();
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartCounter();
+            renderCartItems();
+            toggleCartDrawer(true);
+        }
+
+        function updateCartQty(productId, delta) {
+            const item = cart.find(i => i.id === productId);
+            if (!item) return;
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(i => i.id !== productId);
+            }
+            updateCartCounter();
+            renderCartItems();
+        }
+
+        function updateCartCounter() {
+            const counter = document.getElementById('cart-counter');
+            const totalQty = cart.reduce((sum, i) => sum + i.qty, 0);
+            if (totalQty > 0) {
+                counter.innerText = totalQty;
+                counter.classList.remove('hidden');
+            } else {
+                counter.classList.add('hidden');
+            }
+        }
+
+        function toggleCartDrawer(forceOpen = false) {
+            const drawer = document.getElementById('cart-drawer');
+            const panel = document.getElementById('cart-drawer-panel');
+            if (forceOpen || drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                setTimeout(() => panel.classList.remove('translate-x-full'), 10);
+            } else {
+                panel.classList.add('translate-x-full');
+                setTimeout(() => drawer.classList.add('hidden'), 300);
+            }
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cart-items-container');
+            const t = translations[currentLang];
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="py-12 text-center text-slate-400 kurdish-clean">
+                        <i class="fa-solid fa-bag-shopping text-4xl mb-3"></i>
+                        <p class="font-bold">سەبتا داخوازیان ڤالا یە</p>
+                    </div>
+                `;
+                document.getElementById('cart-subtotal-val').innerText = `0 ${t.iqd}`;
+                document.getElementById('cart-total-val').innerText = `0 ${t.iqd}`;
+                return;
+            }
+
+            let subtotal = 0;
+            container.innerHTML = cart.map(i => {
+                const name = currentLang === 'en' ? i.nameEn : (currentLang === 'ku' ? i.nameKu : i.nameAr);
+                subtotal += i.price * i.qty;
+                return `
+                    <div class="py-3 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <img src="${i.img}" class="w-12 h-12 rounded-xl object-cover">
+                            <div>
+                                <h5 class="font-bold text-slate-800 text-sm kurdish-clean">${name}</h5>
+                                <p class="text-xs text-red-600 font-bold">${(i.price * i.qty).toLocaleString()} ${t.iqd}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
+                            <button onclick="updateCartQty('${i.id}', -1)" class="w-7 h-7 bg-white rounded-lg text-slate-700 shadow-sm flex items-center justify-center font-bold hover:bg-slate-200">-</button>
+                            <span class="text-xs font-bold w-5 text-center">${i.qty}</span>
+                            <button onclick="updateCartQty('${i.id}', 1)" class="w-7 h-7 bg-white rounded-lg text-slate-700 shadow-sm flex items-center justify-center font-bold hover:bg-slate-200">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('cart-subtotal-val').innerText = `${subtotal.toLocaleString()} ${t.iqd}`;
+            document.getElementById('cart-total-val').innerText = `${subtotal.toLocaleString()} ${t.iqd}`;
+        }
+
+        function sendOrderWhatsApp(phoneNumber) {
+            if (cart.length === 0) {
+                showMsgModal('سەبتلا ڤالایە', 'تکایە بەرهەمان ل سەر سەبتێ زێدە بکە پێش ناردنا داخوازیێ.', 'error');
+                return;
+            }
+            const name = document.getElementById('customer-name').value.trim();
+            const address = document.getElementById('customer-address').value.trim();
+
+            if (!name || !address) {
+                showMsgModal('زانیاری نەتمامن', 'تکایە ناڤێ خۆ و ناڤنیشان ل زاخو (تاخێ شقا) و ژمارا تەلەفۆنی بنڤیسە.', 'error');
+                return;
+            }
+
+            let subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+            let msg = `🍕 *داخوازیەکا نوو ژ مطعم پيتزا دليڤەرى - زاخو*\n\n`;
+            msg += `👤 ناڤ: ${name}\n`;
+            msg += `📍 ناڤنیشان و تەلەفۆن: ${address}\n\n`;
+            msg += `📋 *بەرهەمێن داخوازکری:*\n`;
+            cart.forEach((i, idx) => {
+                const n = i.nameKu;
+                msg += `${idx + 1}. ${n} × ${i.qty} = ${(i.price * i.qty).toLocaleString()} د.ع\n`;
+            });
+            msg += `\n💰 *کۆما گشتی:* ${subtotal.toLocaleString()} د.ع\n`;
+            msg += `🚚 *گەهاندن:* بێ بەرامبەرە (مجاني) بو زاخو\n`;
+
+            const url = `https://wa.me/964${phoneNumber.replace(/^0/, '')}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        // Admin Panel Logic (Code is 30067)
+        function openAdminModal() {
+            document.getElementById('admin-modal').classList.remove('hidden');
+            document.getElementById('admin-login-view').classList.remove('hidden');
+            document.getElementById('admin-dashboard-view').classList.add('hidden');
+            document.getElementById('admin-code-input').value = '';
+            document.getElementById('admin-error-msg').classList.add('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function verifyAdminCode() {
+            const code = document.getElementById('admin-code-input').value.trim();
+            if (code === '30067') {
+                document.getElementById('admin-login-view').classList.add('hidden');
+                document.getElementById('admin-dashboard-view').classList.remove('hidden');
+                renderAdminProductsList();
+            } else {
+                document.getElementById('admin-error-msg').classList.remove('hidden');
+            }
+        }
+
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                restaurantLogo = e.target.result;
+                updateLogoDisplay();
+                saveStorageData();
+                showMsgModal('سەرکەفتن', 'لوگویا مطعمێ هاتە گۆڕین ب سەرکەفتڤی!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderAdminProductsList() {
+            const list = document.getElementById('admin-products-list');
+            list.innerHTML = products.map(p => `
+                <div class="bg-white p-3 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.img}" class="w-12 h-12 rounded-xl object-cover bg-slate-100">
+                        <div>
+                            <h5 class="font-bold text-slate-800 text-sm kurdish-clean">${p.nameKu}</h5>
+                            <span class="text-xs text-red-600 font-bold">${p.price.toLocaleString()} د.ع</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="file" id="file-${p.id}" accept="image/*" onchange="handleProductImageUpload(event, '${p.id}')" class="hidden">
+                        <button onclick="document.getElementById('file-${p.id}').click()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1 kurdish-clean">
+                            <i class="fa-solid fa-camera"></i> وێنە
+                        </button>
+                        <button onclick="editProductPrice('${p.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-bold transition kurdish-clean">
+                            بها
+                        </button>
+                        <button onclick="deleteProduct('${p.id}')" class="p-2 text-slate-400 hover:text-rose-600 transition">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleProductImageUpload(event, productId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const product = products.find(p => p.id === productId);
+                if (product) {
+                    product.img = e.target.result;
+                    saveStorageData();
+                    renderAdminProductsList();
+                    renderProductsGrid();
+                    showMsgModal('سەرکەفتن', 'وێنەیێ بەرهەمی ژ استودیو هاتە گۆڕین!', 'success');
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function editProductPrice(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            const newPrice = prompt(`بهایێ نوو بنڤیسە بو ${product.nameKu} (د.ع):`, product.price);
+            if (newPrice !== null && !isNaN(newPrice)) {
+                product.price = Number(newPrice);
+                saveStorageData();
+                renderAdminProductsList();
+                renderProductsGrid();
+                showMsgModal('سەرکەفتن', 'بها هاتە نووژەنکرن ب سەرکەفتن!', 'success');
+            }
+        }
+
+        function addNewProductPrompt() {
+            const name = prompt('ناڤێ بەرهەمێ نوو بنڤیسە (کوردی/عربی):');
+            if (!name) return;
+            const price = prompt('بهایێ بەرهەمی بنڤیسە (د.ع):', '3000');
+            if (price === null || isNaN(price)) return;
+
+            const newId = 'prod_' + Date.now();
+            products.unshift({
+                id: newId,
+                cat: activeCategory,
+                nameAr: name,
+                nameKu: name,
+                nameEn: name,
+                price: Number(price),
+                img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=600&q=80'
+            });
+            saveStorageData();
+            renderAdminProductsList();
+            renderProductsGrid();
+            showMsgModal('سەرکەفتن', 'بەرهەمێ نوو هاتە زێدەکرن!', 'success');
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('تۆ دلنیای ژ ژێبرنا ڤی بەرهەمی؟')) {
+                products = products.filter(p => p.id !== productId);
+                saveStorageData();
+                renderAdminProductsList();
+                renderProductsGrid();
+            }
+        }
+
+        function showMsgModal(title, text, type = 'success') {
+            const modal = document.getElementById('msg-modal');
+            const icon = document.getElementById('msg-icon');
+            document.getElementById('msg-title').innerText = title;
+            document.getElementById('msg-text').innerText = text;
+
+            if (type === 'success') {
+                icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl';
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-2xl';
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeMsgModal() {
+            document.getElementById('msg-modal').classList.add('hidden');
+        }
+
+        window.onload = function() {
+            loadStorageData();
+        };
+    </script>
+</body>
+</html>

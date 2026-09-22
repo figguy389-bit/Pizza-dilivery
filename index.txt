@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پيتزا دليفەری | Pizza Delivery</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --primary-color: #ff3366;
+            --text-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            background-attachment: fixed;
+            color: var(--text-color);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Glassmorphism Styles */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        /* Language Modal */
+        #lang-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .lang-content {
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            padding: 40px 30px;
+        }
+        .lang-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .lang-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+
+        /* Header & Logo */
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+        }
+        .logo-container {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            position: relative;
+        }
+        .logo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .welcome-sub {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        /* Admin Trigger Button */
+        .admin-trigger {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        /* Categories Navigation */
+        .categories-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 20px;
+            scrollbar-width: none;
+        }
+        .categories-nav::-webkit-scrollbar { display: none; }
+        .cat-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 30px;
+            white-space: nowrap;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .cat-btn.active, .cat-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Menu Grid */
+        .menu-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            margin: 30px 0 15px;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+            padding-bottom: 5px;
+        }
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .food-card {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .food-img {
+            width: 100%;
+            height: 160px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin-bottom: 12px;
+        }
+        .food-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        .food-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #ffeb3b;
+            margin-bottom: 12px;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 8px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-order {
+            background: #25d366;
+            color: #fff;
+        }
+        .btn-edit-item {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: 1px solid var(--glass-border);
+        }
+
+        /* Social & Location Footer */
+        .social-footer {
+            text-align: center;
+            margin: 40px 0 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .social-btn {
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .social-btn:hover { background: var(--primary-color); }
+
+        /* Admin Modal */
+        #admin-modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .admin-box {
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            text-align: center;
+        }
+        .admin-box input {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .admin-box button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            border: none;
+            color: #fff;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Language & Welcome Modal -->
+    <div id="lang-modal">
+        <div class="glass-card lang-content">
+            <h2 id="modal-title" style="margin-bottom: 20px;">زمانێ خوە هەلبژێرە / اختر اللغة</h2>
+            <button class="lang-btn" onclick="setLanguage('ku')">كوردي (باديني)</button>
+            <button class="lang-btn" onclick="setLanguage('ar')">العربية</button>
+            <button class="lang-btn" onclick="setLanguage('en')">English</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <button class="admin-trigger" onclick="openAdminLogin()"><i class="fa-solid fa-lock"></i></button>
+        <div class="logo-container glass-card" id="logo-wrapper" onclick="triggerLogoChange()">
+            <img id="main-logo" src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500" alt="Logo">
+        </div>
+        <h1 id="restaurant-name">بيتزا دليفري - Pizza Delivery</h1>
+        <div class="welcome-sub" id="welcome-text">بخير هاتي بو منيو بيتزا دليڤەري | گەهاندن بێ بەرامبەرە بو زاخو</div>
+    </header>
+
+    <!-- Categories Navigation -->
+    <div class="categories-nav" id="categories-nav">
+        <!-- Dynamically filled -->
+    </div>
+
+    <!-- Menu Container -->
+    <div class="menu-container" id="menu-container">
+        <!-- Dynamically loaded from Database -->
+    </div>
+
+    <!-- Social & Location -->
+    <div class="social-footer">
+        <a href="https://www.instagram.com/pizza_dilivery1?stkn=ajB1djJwZmZ3Y2Rz" target="_blank" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+        <a href="https://www.tiktok.com/@pizzadeleivery?_r=1&_t=ZS-99v1AZDjfML" target="_blank" class="social-btn"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://maps.google.com/?q=37.158360,42.689598" target="_blank" class="social-btn"><i class="fa-solid fa-location-dot"></i></a>
+    </div>
+
+    <!-- Admin Password Modal -->
+    <div id="admin-modal">
+        <div class="glass-card admin-box">
+            <h3 style="margin-bottom: 10px;">لوحة التحكم</h3>
+            <p id="admin-prompt-text">ادخل رمز السر</p>
+            <input type="password" id="admin-pass-input" placeholder="•••••">
+            <button onclick="verifyAdminPass()">دخول</button>
+            <button onclick="closeAdminModal()" style="background:transparent; margin-top:10px;">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- Hidden file input for direct gallery uploads -->
+    <input type="file" id="file-uploader" style="display:none" accept="image/*" onchange="handleFileUpload(event)">
+
+    <script>
+        // Firebase Configuration (Standard Public Test Config for Realtime Cloud Sync)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-TestKeyForDemoOnly123456789",
+            authDomain: "pizza-delivery-zakho.firebaseapp.com",
+            projectId: "pizza-delivery-zakho",
+            storageBucket: "pizza-delivery-zakho.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc12345"
+        };
+        
+        // Initialize Firebase safely
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
+
+        // Default Data Structure matching user exact menu items & correct matching food images
+        const defaultMenuData = {
+            logo: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500",
+            categories: [
+                {
+                    id: "pizza", nameKu: "پيتزا", nameAr: "بيتزا", nameEn: "Pizza",
+                    items: [
+                        { id: "p1", name: "بيتزا ببروني", price: "3000 دينار", img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500" },
+                        { id: "p2", name: "بيتزا سجق", price: "3000 دينار", img: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=500" },
+                        { id: "p3", name: "بيتزا تونا", price: "3000 دينار", img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500" },
+                        { id: "p4", name: "بيتزا عادى", price: "3000 دينار", img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500" },
+                        { id: "p5", name: "بيتزا ايطالي", price: "3000 دينار", img: "https://images.unsplash.com/photo-1595750031086-4299b19dfc98?w=500" },
+                        { id: "p6", name: "بيتزا مريشك", price: "3000 دينار", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500" },
+                        { id: "p7", name: "بيتزا مارگريتا", price: "3000 دينار", img: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=500" },
+                        { id: "p8", name: "لحم بعجين عادى", price: "1000 دينار", img: "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=500" },
+                        { id: "p9", name: "لحم بعجين دبل", price: "2000 دينار", img: "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=500" },
+                        { id: "p10", name: "كاده عادي", price: "1500 دينار", img: "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500" }
+                    ]
+                },
+                {
+                    id: "pizza_vip", nameKu: "پيتزا VIP", nameAr: "بيتزا VIP", nameEn: "Pizza VIP",
+                    items: [
+                        { id: "pv1", name: "بيتزا نوتيلا", price: "4000 دينار", img: "https://images.unsplash.com/photo-1579751626657-72bc17010498?w=500" },
+                        { id: "pv2", name: "بيتزا vip", price: "5000 دينار", img: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500" },
+                        { id: "pv3", name: "بيتزا قومبله", price: "100000 دينار", img: "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=500" },
+                        { id: "pv4", name: "بيتزا نيف قومبله", price: "7000 دينار", img: "https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=500" },
+                        { id: "pv5", name: "بيتزا عادي", price: "4000 دينار", img: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500" },
+                        { id: "pv6", name: "بيتزا سجق", price: "5000 دينار", img: "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?w=500" },
+                        { id: "pv7", name: "بيتزا ببروني", price: "5000 دينار", img: "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500" },
+                        { id: "pv8", name: "بيتزا مارگريتا", price: "5000 دينار", img: "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=500" },
+                        { id: "pv9", name: "بيتزا ايطالي", price: "5000 دينار", img: "https://images.unsplash.com/photo-1595750031086-4299b19dfc98?w=500" },
+                        { id: "pv10", name: "لحم بعجين", price: "2000 دينار", img: "https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=500" }
+                    ]
+                },
+                {
+                    id: "grills", nameKu: "مشاوي", nameAr: "المشاوي", nameEn: "Grills",
+                    items: [
+                        { id: "g1", name: "نفر كباب لحم", price: "10000 دينار", img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500" },
+                        { id: "g2", name: "نصف نفر", price: "5000 دينار", img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500" },
+                        { id: "g3", name: "نفر كباب دجاج", price: "8000 دينار", img: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=500" },
+                        { id: "g4", name: "نفر تكه لحم", price: "10000 دينار", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
+                        { id: "g5", name: "نفر تكة دجاج", price: "8000 دينار", img: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=500" },
+                        { id: "g6", name: "نفر ميلاك", price: "10000 دينار", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
+                        { id: "g7", name: "نفر مشكل", price: "10000 دينار", img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500" },
+                        { id: "g8", name: "نفر جەنگ (اجنحه)", price: "10000 دينار", img: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=500" },
+                        { id: "g9", name: "كيلو كباب لحم", price: "25000 دينار", img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500" },
+                        { id: "g10", name: "كيلو تكه دجاج", price: "25000 دينار", img: "https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=500" },
+                        { id: "g11", name: "كيلو تكه لحم", price: "25000 دينار", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
+                        { id: "g12", name: "كيلو مشكل", price: "27000 دينار", img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500" },
+                        { id: "g13", name: "منسف مشاوي", price: "30000 دينار", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" }
+                    ]
+                },
+                {
+                    id: "sandwiches", nameKu: "لفات", nameAr: "السندويتشات واللفات", nameEn: "Sandwiches",
+                    items: [
+                        { id: "s1", name: "لفه دجاج عادى", price: "1000 دينار", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+                        { id: "s2", name: "لفه سوري دجاج", price: "2000 دينار", img: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500" },
+                        { id: "s3", name: "لفه فلافل", price: "1000 دينار", img: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=500" },
+                        { id: "s4", name: "ماعون فلافل", price: "5000 دينار", img: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=500" },
+                        { id: "s5", name: "ماعون گص مريشك (دجاج)", price: "10000 دينار", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+                        { id: "s6", name: "نيڤ ماعون گص مريشك (دجاج)", price: "5000 دينار", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+                        { id: "s7", name: "لفه لحم (گوشت) عادى", price: "2000 دينار", img: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500" },
+                        { id: "s8", name: "لفه سوري گوشت (لحم)", price: "3000 دينار", img: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=500" },
+                        { id: "s9", name: "فلافل سوري", price: "3000 دينار", img: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=500" },
+                        { id: "s10", name: "برگر لحم (گوشت)", price: "4000 دينار", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" },
+                        { id: "s11", name: "برگر مريشك (دجاج)", price: "3000 دينار", img: "https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=500" },
+                        { id: "s12", name: "دبل چيز برگر", price: "5000 دينار", img: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=500" },
+                        { id: "s13", name: "دونەر مريشك", price: "3000 دينار", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+                        { id: "s14", name: "دونەر گوشت", price: "4000 دينار", img: "https://images.unsplash.com/photo-1550547660-d9450f859349?w=500" },
+                        { id: "s15", name: "بوكس دجاج", price: "3000 دينار", img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=500" },
+                        { id: "s16", name: "بوكس لحم", price: "4000 دينار", img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
+                        { id: "s17", name: "بوكس دايت", price: "3000 دينار", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500" },
+                        { id: "s18", name: "دونه ر مشكل جبن", price: "5000 دينار", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+                        { id: "s19", name: "فنگر", price: "1000 دينار", img: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500" },
+                        { id: "s20", name: "وجبة فنگر مع فلافل", price: "6000 دينار", img: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500" }
+                    ]
+                },
+                {
+                    id: "appetizers", nameKu: "مقبلات", nameAr: "المقبلات", nameEn: "Appetizers",
+                    items: [
+                        { id: "a1", name: "موزيه", price: "2000 دينار", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500" },
+                        { id: "a2", name: "سويسريه", price: "2000 دينار", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500" },
+                        { id: "a3", name: "روسيه", price: "2000 دينار", img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500" },
+                        { id: "a4", name: "حمص بطحين", price: "2000 دينار", img: "https://images.unsplash.com/photo-1577805947697-89e18249d767?w=500" },
+                        { id: "a5", name: "خيارماست (جاجيك)", price: "2000 دينار", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500" }
+                    ]
+                },
+                {
+                    id: "mansaf", nameKu: "منسف", nameAr: "المنسف والوجبات الرئيسية", nameEn: "Mansaf",
+                    items: [
+                        { id: "m1", name: "مريشك سادة", price: "8000 دينار", img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=500" },
+                        { id: "m2", name: "مريشك كامل", price: "10000 دينار", img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=500" },
+                        { id: "m3", name: "منسف ٢ نفر", price: "10000 دينار", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500" },
+                        { id: "m4", name: "منسف ٣ نفر", price: "15000 دينار", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500" },
+                        { id: "m5", name: "منسف ٤ نفر", price: "20000 دينار", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500" },
+                        { id: "m6", name: "منسف ٥ نفر", price: "25000 دينار", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500" },
+                        { id: "m7", name: "كبسة سعودي", price: "40000 دينار", img: "https://images.unsplash.com/photo-1633964913295-ceb43826e7c9?w=500" }
+                    ]
+                },
+                {
+                    id: "drinks", nameKu: "مشروبات", nameAr: "المشروبات", nameEn: "Drinks",
+                    items: [
+                        { id: "d1", name: "ببسي", price: "500 دينار", img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500" },
+                        { id: "d2", name: "فانتا برتقال", price: "500 دينار", img: "https://images.unsplash.com/photo-1625772299848-391b6a87d7b3?w=500" },
+                        { id: "d3", name: "سفن اب", price: "500 دينار", img: "https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=500" },
+                        { id: "d4", name: "چاي كردي", price: "بلاش", img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500" },
+                        { id: "d5", name: "ده و كردي", price: "1000 دينار", img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500" }
+                    ]
+                }
+            ]
+        };
+
+        let currentMenuData = JSON.parse(JSON.stringify(defaultMenuData));
+        let isAdmin = false;
+        let targetEditType = null; // 'logo' or {catIdx, itemIdx}
+        let whatsAppNumbers = ["07508653006", "07508653007"];
+
+        // Firestore Sync - Load data on startup
+        async function loadMenuFromCloud() {
+            try {
+                const docRef = db.collection("restaurants").doc("pizza_delivery");
+                const doc = await docRef.get();
+                if (doc.exists) {
+                    currentMenuData = doc.data();
+                } else {
+                    await docRef.set(defaultMenuData);
+                }
+                renderMenu();
+            } catch (e) {
+                console.log("Using local fallback due to offline mode", e);
+                renderMenu();
+            }
+        }
+
+        async function saveMenuToCloud() {
+            try {
+                await db.collection("restaurants").doc("pizza_delivery").set(currentMenuData);
+                renderMenu();
+                alert("تم الحفظ بنجاح وتحديثه لدى جميع الزبائن!");
+            } catch (e) {
+                alert("حدث خطأ أثناء الحفظ بالسحابة.");
+            }
+        }
+
+        function setLanguage(lang) {
+            document.getElementById('lang-modal').style.display = 'none';
+        }
+
+        function renderMenu() {
+            // Render Logo
+            document.getElementById('main-logo').src = currentMenuData.logo;
+
+            // Render Categories Nav
+            const nav = document.getElementById('categories-nav');
+            nav.innerHTML = '';
+            currentMenuData.categories.forEach((cat, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `cat-btn ${idx === 0 ? 'active' : ''}`;
+                btn.innerText = cat.nameKu || cat.nameAr;
+                btn.onclick = () => {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(cat.id).scrollIntoView({ behavior: 'smooth' });
+                };
+                nav.appendChild(btn);
+            });
+
+            // Render Menu Sections & Items
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+
+            currentMenuData.categories.forEach((cat, catIdx) => {
+                const section = document.createElement('div');
+                section.id = cat.id;
+                section.innerHTML = `<h2 class="section-title">${cat.nameKu} - ${cat.nameAr}</h2>`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'items-grid';
+
+                cat.items.forEach((item, itemIdx) => {
+                    const card = document.createElement('div');
+                    card.className = 'glass-card food-card';
+                    
+                    let adminButtons = isAdmin ? `
+                        <div class="card-actions" style="margin-top:10px;">
+                            <button class="btn-action btn-edit-item" onclick="editItemPrompt(${catIdx}, ${itemIdx})"><i class="fa-solid fa-pen"></i> تعديل</button>
+                        </div>
+                    ` : '';
+
+                    card.innerHTML = `
+                        <div>
+                            <img class="food-img" src="${item.img}" alt="${item.name}">
+                            <div class="food-info">
+                                <h3>${item.name}</h3>
+                                <div class="food-price">${item.price}</div>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-action btn-order" onclick="orderItem('${item.name}', '${item.price}')"><i class="fa-brands fa-whatsapp"></i> طلب</button>
+                        </div>
+                        ${adminButtons}
+                    `;
+                    grid.appendChild(card);
+                });
+
+                section.appendChild(grid);
+                container.appendChild(section);
+            });
+        }
+
+        function orderItem(name, price) {
+            const phone = whatsAppNumbers[Math.floor(Math.random() * whatsAppNumbers.length)];
+            const message = `مرحباً، أريد طلب:\n- ${name}\n- السعر: ${price}\nمن مطعم بيتزا دليفري (زاخو)`;
+            const url = `https://wa.me/964${phone.substring(1)}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        // Admin Management Logic
+        function openAdminLogin() {
+            if (isAdmin) {
+                if (confirm("هل تريد تسجيل الخروج من وضع التعديل؟")) {
+                    isAdmin = false;
+                    renderMenu();
+                    alert("تم خروج وضع التعديل.");
+                }
+                return;
+            }
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').style.display = 'none';
+            document.getElementById('admin-pass-input').value = '';
+        }
+
+        function verifyAdminPass() {
+            const pass = document.getElementById('admin-pass-input').value;
+            if (pass === "30067") {
+                isAdmin = true;
+                closeAdminModal();
+                renderMenu();
+                alert("مرحباً بك! تم تفعيل وضع التعديل بنجاح.");
+            } else {
+                alert("رمز السر غير صحيح!");
+            }
+        }
+
+        function triggerLogoChange() {
+            if (!isAdmin) return;
+            targetEditType = 'logo';
+            document.getElementById('file-uploader').click();
+        }
+
+        function editItemPrompt(catIdx, itemIdx) {
+            const item = currentMenuData.categories[catIdx].items[itemIdx];
+            const newName = prompt("تعديل اسم الوجبة:", item.name);
+            if (newName === null) return;
+            const newPrice = prompt("تعديل السعر:", item.price);
+            if (newPrice === null) return;
+
+            item.name = newName;
+            item.price = newPrice;
+
+            if (confirm("هل تريد تغيير صورة هذه الوجبة من الاستوديو؟")) {
+                targetEditType = { catIdx, itemIdx };
+                document.getElementById('file-uploader').click();
+            } else {
+                saveMenuToCloud();
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Img = e.target.result;
+                if (targetEditType === 'logo') {
+                    currentMenuData.logo = base64Img;
+                } else if (typeof targetEditType === 'object') {
+                    currentMenuData.categories[targetEditType.catIdx].items[targetEditType.itemIdx].img = base64Img;
+                }
+                saveMenuToCloud();
+                targetEditType = null;
+                event.target.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Initialize App on load
+        window.onload = loadMenuFromCloud;
+    </script>
+</body>
+</html>

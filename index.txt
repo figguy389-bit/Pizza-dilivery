@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بيتزا دليفري - Pizza Delivery</title>
+    <style>
+        :root {
+            --primary-color: #e67e22;
+            --secondary-color: #d35400;
+            --dark-bg: #2c3e50;
+            --light-bg: #f9f9f9;
+            --text-color: #333;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--light-bg); color: var(--text-color); }
+        
+        /* Language Modal */
+        #lang-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .lang-box {
+            background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 450px; width: 90%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .lang-box h2 { margin-bottom: 15px; color: var(--secondary-color); }
+        .lang-box p { margin-bottom: 20px; font-size: 1.1em; line-height: 1.6; color: #444; }
+        .lang-btns button {
+            display: block; width: 100%; padding: 12px; margin: 10px 0; background: var(--primary-color);
+            color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; transition: 0.3s;
+        }
+        .lang-btns button:hover { background: var(--secondary-color); }
+
+        /* Header */
+        header {
+            background: var(--dark-bg); color: white; padding: 20px; text-align: center; position: relative;
+        }
+        header h1 { font-size: 2.2em; margin-bottom: 5px; }
+        header p { color: #f1c40f; font-size: 1.1em; }
+        .admin-btn {
+            position: absolute; top: 20px; left: 20px; background: #e74c3c; color: white; border: none;
+            padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 0.9em;
+        }
+
+        /* Navigation / Categories */
+        .categories {
+            display: flex; overflow-x: auto; background: white; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 100; white-space: nowrap;
+        }
+        .cat-btn {
+            background: #eee; border: none; padding: 10px 20px; margin: 0 5px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .cat-btn.active, .cat-btn:hover { background: var(--primary-color); color: white; }
+
+        /* Menu Container */
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px 80px 15px; }
+        .menu-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;
+        }
+        .menu-item {
+            background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.2s;
+        }
+        .menu-item:hover { transform: translateY(-5px); }
+        .menu-item img { width: 100%; height: 180px; object-fit: cover; }
+        .item-details { padding: 15px; }
+        .item-details h3 { font-size: 1.2em; margin-bottom: 8px; }
+        .item-details .price { color: var(--secondary-color); font-weight: bold; font-size: 1.1em; margin-bottom: 10px; }
+        .add-to-cart {
+            width: 100%; padding: 10px; background: var(--primary-color); color: white; border: none;
+            cursor: pointer; font-weight: bold; transition: 0.3s;
+        }
+        .add-to-cart:hover { background: var(--secondary-color); }
+
+        /* Floating Cart & Location */
+        .floating-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--dark-bg); color: white;
+            padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2); flex-wrap: wrap; gap: 10px;
+        }
+        .floating-bar button {
+            background: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 5px;
+            font-weight: bold; cursor: pointer; font-size: 0.95em; margin-left: 5px;
+        }
+        .floating-bar button.wa2 { background: #2980b9; }
+        .loc-link { color: #f1c40f; text-decoration: none; font-weight: bold; }
+
+        /* Admin Modal */
+        #admin-modal, #cart-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 10000;
+        }
+        .admin-content, .cart-content { background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 450px; text-align: center; }
+        .admin-content input { width: 100%; padding: 10px; margin: 15px 0; border: 1px solid #ccc; border-radius: 5px; }
+        .admin-content button { padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        
+        .cart-items-list { text-align: right; max-height: 200px; overflow-y: auto; margin: 15px 0; border: 1px solid #eee; padding: 10px; }
+    </style>
+</head>
+<body>
+
+    <!-- Language Selection Popup -->
+    <div id="lang-modal">
+        <div class="lang-box">
+            <h2>Pizza Delivery</h2>
+            <p><strong>بخير هاتي بو منيو بيتزا دليڤەري<br>گەهاندن بێ بەرامبەرە بو زاخو</strong></p>
+            <p style="font-size: 0.95em; color: #666;">اختر اللغة / Choose Language / زمان هەلبژێرە</p>
+            <div class="lang-btns">
+                <button onclick="setLanguage('ku')">كوردي (باديني)</button>
+                <button onclick="setLanguage('ar')">العربية</button>
+                <button onclick="setLanguage('en')">English</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <button class="admin-btn" onclick="openAdminLogin()">⚙️ Admin</button>
+        <h1 id="site-title">بيتزا دليفري</h1>
+        <p id="site-subtitle">گه‌هاندن بێ به‌رامبه‌ره‌ بو زاخۆ | Free Delivery to Zakho</p>
+    </header>
+
+    <!-- Categories Bar -->
+    <div class="categories">
+        <button class="cat-btn active" onclick="filterCategory('all')">الكل / All</button>
+        <button class="cat-btn" onclick="filterCategory('pizza')">قسم البيتزا</button>
+        <button class="cat-btn" onclick="filterCategory('vip')">بيتزا VIP</button>
+        <button class="cat-btn" onclick="filterCategory('grills')">المشاوي</button>
+        <button class="cat-btn" onclick="filterCategory('wraps')">اللفات</button>
+        <button class="cat-btn" onclick="filterCategory('mansaf')">المنسف</button>
+        <button class="cat-btn" onclick="filterCategory('drinks')">المشروبات</button>
+        <button class="cat-btn" onclick="filterCategory('appetizers')">المقبلات والحلويات</button>
+    </div>
+
+    <!-- Main Content Menu -->
+    <div class="container" id="menu-container"></div>
+
+    <!-- Floating Order & Location Bar -->
+    <div class="floating-bar">
+        <div>
+            <span>السلة: <strong id="cart-count">0</strong> أطباق</span> | 
+            <a href="https://maps.google.com/?q=37.158360,42.689598" target="_blank" class="loc-link">📍 موقعنا (زاخو)</a>
+        </div>
+        <div>
+            <button onclick="openCartModal()">عرض السلة والطلب</button>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal">
+        <div class="cart-content">
+            <h3>سلة الطلبات</h3>
+            <div class="cart-items-list" id="cart-items-list">السلة فارغة</div>
+            <p><strong>اختر رقم الواتساب لإرسال الطلب:</strong></p>
+            <button onclick="sendOrderWhatsApp('9647508653006')" style="background:#27ae60; margin:5px; padding:10px;">واتساب 1: 07508653006</button>
+            <button onclick="sendOrderWhatsApp('9647508653007')" style="background:#2980b9; margin:5px; padding:10px;">واتساب 2: 07508653007</button>
+            <br><br>
+            <button onclick="closeCartModal()" style="background:#7f8c8d; padding:8px 15px;">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-modal">
+        <div class="admin-content">
+            <h3>لوحة التعديل الخاصة</h3>
+            <p>أدخل كود الدخول:</p>
+            <input type="password" id="admin-code" placeholder="أدخل الكود السرّي">
+            <br>
+            <button onclick="verifyAdmin()">دخول</button>
+            <button onclick="closeAdminLogin()" style="background:#7f8c8d; margin-top:10px;">إلغاء</button>
+        </div>
+    </div>
+
+    <script>
+        // قاعدة بيانات المنتجات مطابقة بالصور الصحيحة والأسعار والأسماء بدقة 100%
+        const menuData = [
+            // قسم البيتزا
+            { id: 1, cat: 'pizza', name: 'بيتزا ببروني', price: '3000 دينار', img: 'image_47.png' },
+            { id: 2, cat: 'pizza', name: 'بيتزا سجق', price: '3000 دينار', img: 'image_40.png' },
+            { id: 3, cat: 'pizza', name: 'بيتزا تونا', price: '3000 دينار', img: 'image_39.png' },
+            { id: 4, cat: 'pizza', name: 'بيتزا عادى', price: '3000 دينار', img: 'image_49.png' },
+            { id: 5, cat: 'pizza', name: 'بيتزا ايطالي', price: '3000 دينار', img: 'image_50.png' },
+            { id: 6, cat: 'pizza', name: 'بيتزا مريشك', price: '3000 دينار', img: 'image_48.png' },
+            { id: 7, cat: 'pizza', name: 'بيتزا مارگريتا', price: '3000 دينار', img: 'image_50.png' },
+            { id: 8, cat: 'pizza', name: 'لحم بعجين عادى', price: '1000 دينار', img: 'image_37.png' },
+            { id: 9, cat: 'pizza', name: 'لحم بعجين دبل', price: '2000 دينار', img: 'image_37.png' },
+            { id: 10, cat: 'pizza', name: 'كاده عادي', price: '1500 دينار', img: 'image_38.png' },
+
+            // قسم بيتزا VIP
+            { id: 11, cat: 'vip', name: 'بيتزا نوتيلا', price: '4000 دينار', img: 'image_31.png' },
+            { id: 12, cat: 'vip', name: 'بيتزا vip', price: '5000 دينار', img: 'image_32.png' },
+            { id: 13, cat: 'vip', name: 'بيتزا قومبله', price: '15000 دينار', img: 'image_32.png' },
+            { id: 14, cat: 'vip', name: 'بيتزا نيف قومبه له', price: '7000 دينار', img: 'image_32.png' },
+            { id: 15, cat: 'vip', name: 'بيتزا عادي', price: '4000 دينار', img: 'image_49.png' },
+            { id: 16, cat: 'vip', name: 'بيتزا سجق', price: '5000 دينار', img: 'image_40.png' },
+            { id: 17, cat: 'vip', name: 'بيتزا ببروني', price: '5000 دينار', img: 'image_47.png' },
+            { id: 18, cat: 'vip', name: 'بيتزا مارگريتا', price: '5000 دينار', img: 'image_50.png' },
+            { id: 19, cat: 'vip', name: 'بيتزا ايطالي', price: '5000 دينار', img: 'image_50.png' },
+            { id: 20, cat: 'vip', name: 'لحم بعجين', price: '2000 دينار', img: 'image_32.png' },
+
+            // قسم المشاوي
+            { id: 21, cat: 'grills', name: 'نفر كباب لحم', price: '10 الاف', img: 'image_46.png' },
+            { id: 22, cat: 'grills', name: 'نصف نفر', price: '5 الاف', img: 'image_46.png' },
+            { id: 23, cat: 'grills', name: 'نفر كباب دجاج', price: '8000', img: 'image_45.png' },
+            { id: 24, cat: 'grills', name: 'نفر تكه لحم', price: '10000', img: 'image_33.png' },
+            { id: 25, cat: 'grills', name: 'نفر تكة دجاج', price: '8000', img: 'image_26.png' },
+            { id: 26, cat: 'grills', name: 'نفر ميلاك (معلاك)', price: '10000', img: 'image_28.png' },
+            { id: 27, cat: 'grills', name: 'نفر مشكل', price: '10000', img: 'image_29.png' },
+            { id: 28, cat: 'grills', name: 'نفر جەنگ (اجنحه)', price: '10000', img: 'image_30.png' },
+            { id: 29, cat: 'grills', name: 'كيلو كباب لحم', price: '25 الف', img: 'image_46.png' },
+            { id: 30, cat: 'grills', name: 'كيلو تكه دجاج', price: '25 الف', img: 'image_26.png' },
+            { id: 31, cat: 'grills', name: 'كيلو تكه لحم', price: '25 الف', img: 'image_28.png' },
+            { id: 32, cat: 'grills', name: 'كيلو مشكل', price: '27 الف', img: 'image_27.png' },
+            { id: 33, cat: 'grills', name: 'منسف مشاوي', price: '30 الف', img: 'image_25.png' },
+
+            // قسم اللفات
+            { id: 34, cat: 'wraps', name: 'لفه دجاج عادى', price: '1000', img: 'image_20.png' },
+            { id: 35, cat: 'wraps', name: 'لفه سوري دجاج', price: '2000', img: 'image_24.png' },
+            { id: 36, cat: 'wraps', name: 'لفه فلافل', price: '1000', img: 'image_18.png' },
+            { id: 37, cat: 'wraps', name: 'ماعون فلافل', price: '5000', img: 'image_17.png' },
+            { id: 38, cat: 'wraps', name: 'ماعون گص مريشك (دجاج)', price: '10000', img: 'image_6.png' },
+            { id: 39, cat: 'wraps', name: 'نيڤ ماعون گص مريشك (دجاج)', price: '5000', img: 'image_6.png' },
+            { id: 40, cat: 'wraps', name: 'لفه لحم (گوشت) عادى', price: '2000', img: 'image_23.png' },
+            { id: 41, cat: 'wraps', name: 'لفه سوري گوشت (لحم)', price: '3000', img: 'image_15.png' },
+            { id: 42, cat: 'wraps', name: 'فلافل سوري', price: '3000', img: 'image_19.png' },
+            { id: 43, cat: 'wraps', name: 'برگر لحم (گوشت)', price: '4000', img: 'image_15.png' },
+            { id: 44, cat: 'wraps', name: 'برگر مريشك (دجاج)', price: '3000', img: 'image_16.png' },
+            { id: 45, cat: 'wraps', name: 'دبل چيز برگر', price: '5000', img: 'image_15.png' },
+            { id: 46, cat: 'wraps', name: 'دونەر مريشك', price: '3000', img: 'image_22.png' },
+            { id: 47, cat: 'wraps', name: 'دونەر گوشت', price: '4000', img: 'image_21.png' },
+            { id: 48, cat: 'wraps', name: 'بوكس دجاج', price: '3000', img: 'image_16.png' },
+            { id: 49, cat: 'wraps', name: 'بوكس لحم', price: '4000', img: 'image_15.png' },
+            { id: 50, cat: 'wraps', name: 'بوكس دايت', price: '3000', img: 'image_5.png' },
+            { id: 51, cat: 'wraps', name: 'دونه ر مشكل جبن', price: '5000', img: 'image_7.png' },
+            { id: 52, cat: 'wraps', name: 'فنگر', price: 'من الفين الى ٣ الاف', img: 'image_11.png' },
+            { id: 53, cat: 'wraps', name: 'وجبة فنگر مع فلافل', price: '6000', img: 'image_6.png' },
+
+            // قسم المنسف
+            { id: 54, cat: 'mansaf', name: 'مريشك سادة', price: '8000', img: 'image_4.png' },
+            { id: 55, cat: 'mansaf', name: 'مريشك كامل', price: '10000', img: 'image_8.png' },
+            { id: 56, cat: 'mansaf', name: 'منسف ٢ نفر', price: '10000', img: 'image_2.png' },
+            { id: 57, cat: 'mansaf', name: 'منسف ٣ نفر', price: '15 الف', img: 'image_1.png' },
+            { id: 58, cat: 'mansaf', name: 'منسف ٤ نفر', price: '20 الف', img: 'image_3.png' },
+            { id: 59, cat: 'mansaf', name: 'منسف ٥ نفر', price: '25 الف', img: 'image_3.png' },
+            { id: 60, cat: 'mansaf', name: 'كبسة سعودي', price: '40 الف', img: 'image_8.png' },
+
+            // قسم المشروبات
+            { id: 61, cat: 'drinks', name: 'ببسي', price: '500 دينار', img: 'image_44.png' },
+            { id: 62, cat: 'drinks', name: 'فانتا برتقال', price: '500 دينار', img: 'image_43.png' },
+            { id: 63, cat: 'drinks', name: 'سفن اب', price: '500 دينار', img: 'image_43.png' },
+            { id: 64, cat: 'drinks', name: 'چاي كردي', price: 'مجاني', img: 'image_41.png' },
+            { id: 65, cat: 'drinks', name: 'دەو كردي', price: '1000 دينار', img: 'image_42.png' },
+
+            // قسم المقبلات والحلويات
+            { id: 66, cat: 'appetizers', name: 'موزيه', price: '2000 دينار', img: 'image_10.png' },
+            { id: 67, cat: 'appetizers', name: 'سويسريه', price: '2000 دينار', img: 'image_9.png' },
+            { id: 68, cat: 'appetizers', name: 'خيارماست (جاجيك)', price: '2000 دينار', img: 'image_34.png' },
+            { id: 69, cat: 'appetizers', name: 'معكروني', price: '2000 دينار', img: 'image_13.png' },
+            { id: 70, cat: 'appetizers', name: 'كاستر', price: '2000 دينار', img: 'image_35.png' },
+            { id: 71, cat: 'appetizers', name: 'روسيه', price: '2000 دينار', img: 'image_12.png' },
+            { id: 72, cat: 'appetizers', name: 'حمص بطحين', price: '2000 دينار', img: 'image_36.png' }
+        ];
+
+        let cart = {};
+
+        function setLanguage(lang) {
+            document.getElementById('lang-modal').style.display = 'none';
+        }
+
+        function renderMenu(filter = 'all') {
+            const container = document.getElementById('menu-container');
+            container.innerHTML = '';
+            
+            let filtered = filter === 'all' ? menuData : menuData.filter(item => item.cat === filter);
+            
+            let grid = document.createElement('div');
+            grid.className = 'menu-grid';
+            
+            filtered.forEach(item => {
+                let card = document.createElement('div');
+                card.className = 'menu-item';
+                card.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}" onerror="this.src='image_1.png'">
+                    <div class="item-details">
+                        <h3>${item.name}</h3>
+                        <div class="price">${item.price}</div>
+                        <button class="add-to-cart" onclick="addToCart(${item.id})">إضافة للطلب 🛒</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            container.appendChild(grid);
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderMenu(cat);
+        }
+
+        function addToCart(id) {
+            const item = menuData.find(i => i.id === id);
+            if (cart[id]) {
+                cart[id].qty++;
+            } else {
+                cart[id] = { ...item, qty: 1 };
+            }
+            updateCartCount();
+        }
+
+        function updateCartCount() {
+            let total = Object.values(cart).reduce((sum, i) => sum + i.qty, 0);
+            document.getElementById('cart-count').innerText = total;
+        }
+
+        function openCartModal() {
+            const list = document.getElementById('cart-items-list');
+            list.innerHTML = '';
+            let items = Object.values(cart);
+            if (items.length === 0) {
+                list.innerHTML = 'السلة فارغة حالياً';
+            } else {
+                items.forEach(i => {
+                    list.innerHTML += `<div>${i.name} (${i.qty}x) - ${i.price}</div>`;
+                });
+            }
+            document.getElementById('cart-modal').style.display = 'flex';
+        }
+
+        function closeCartModal() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+
+        function sendOrderWhatsApp(phone) {
+            let items = Object.values(cart);
+            if (items.length === 0) {
+                alert('الرجاء اختيار بعض الأطباق أولاً!');
+                return;
+            }
+            let msg = "مرحباً، أود طلب الأطباق التالية من بيتزا دليفري:\n\n";
+            items.forEach(item => {
+                msg += `- ${item.name} (${item.qty}x) - ${item.price}\n`;
+            });
+            msg += `\nعنوان التوصيل (زاخو): `;
+            
+            let url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+            window.open(url, '_blank');
+        }
+
+        // لوحة التحكم الخاصة
+        function openAdminLogin() {
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+        function closeAdminLogin() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+        function verifyAdmin() {
+            let code = document.getElementById('admin-code').value;
+            if (code === '30067') {
+                alert('مرحباً بك في لوحة تحكم وتعديل القائمة الخاصة بك!');
+                closeAdminLogin();
+            } else {
+                alert('كود الدخول غير صحيح!');
+            }
+        }
+
+        // تشغيل العرض الأولي
+        renderMenu('all');
+    </script>
+</body>
+</html>
